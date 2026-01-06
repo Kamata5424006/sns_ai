@@ -1,16 +1,22 @@
 import { useState } from "react";
-import submit from "";
+import { submit } from "../lib/api";
 
 export default function PostForm(){
     const [text, setText] = useState("");
     
     // eはSyntheticEvent
-    function handlePost(e){
+    async function handlePost(e){
         e.preventDefault(); // formのページ遷移を防止
         // str.trim():先頭と末尾のホワイトスペースを取り除く
         if(!text.trim()) return; // 空投稿防止
-        submit(text); 
-        setText("");
+
+        try {
+            await submit(text); 
+            setText("");
+        } catch(err){   /* errはどんな名前でもよい */
+            // 失敗した時の挙動
+            alert(err.message);
+        }
     }
     
     return (
@@ -31,6 +37,7 @@ export default function PostForm(){
                             id="form_input"
                             name="form_input"
                             value={text}
+                            placeholder="What's happening?"
                             // valueが変化する毎レンダーし直す
                             onChange={e => setText(e.target.value)}
                             onKeyDown={e => {
@@ -38,9 +45,7 @@ export default function PostForm(){
                                     e.preventDefault();
                                 }
                             }}
-                        >
-                            What's happening?
-                        </textarea>
+                        />
                         <button type="submit" id="post">Post</button>
                     </form>
                 </div>
