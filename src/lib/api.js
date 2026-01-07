@@ -1,4 +1,5 @@
-// formから
+// fetch系
+
 export async function submit(text) {
     const res = await fetch("/.netlify/functions/posts", {
         //  POST:フォーム送信の命令
@@ -15,12 +16,12 @@ export async function submit(text) {
         throw new Error("投稿に失敗しました");
     }
 
-    return res.json();
+    return await res.json();
 }
 
 // dbから投稿履歴取得
 export async function fetchPosts(){
     const res = await fetch("/.netlify/functions/posts");
     if(!res.ok) throw new Error("failed to fetch posts");
-    return await res.json;
+    return await res.json();
 }

@@ -1,4 +1,4 @@
-import Header from "./componets/Header";
+import Header from "./components/Header";
 import PostLists from "./components/PostLists";
 import PostForm from "./components/PostForm";
 

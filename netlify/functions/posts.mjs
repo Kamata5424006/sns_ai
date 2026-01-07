@@ -1,14 +1,30 @@
+import path from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 
+// 絶対パス代入
+const dbPath = path.join(process.cwd(), "netlify/functions/database/database.db");
+
 // DB 接続
 const dbPromise = open({
-  filename: "./database/database.db",
+  filename: dbPath,
   driver: sqlite3.Database,
 });
 
+(async () => {
+  const db = await dbPromise;
+  await db.run(`
+    CREATE TABLE IF NOT EXISTS posts(
+      id INTEGER PRIMARY KEY,
+      text TEXT NOT NULL,
+      author TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+})();
+
 export default async function handler(req) {
-  // POST 以外は拒否
+    // POST 以外は拒否
     if(req.method == "POST"){
         return await createPost_user(req);
     }
