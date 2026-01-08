@@ -2,7 +2,7 @@ import 'dotenv/config';
 import generateAiPost from "../netlify/functions/externalApi.mjs";
 
 // 何分おきに投稿するか
-const INTERVAL_MINUTES = 5;
+const INTERVAL_MINUTES = 2;
 const INTERVAL_MS = INTERVAL_MINUTES * 60 * 1000;
 
 // 端末起動時にログ表示
