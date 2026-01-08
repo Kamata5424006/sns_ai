@@ -46,7 +46,7 @@ export default function PostLists(){
                                     </div>
 
                                     <div className="reply_frame">
-                                        <button className="reply">返信</button>
+                                        <button className="reply">reply</button>
                                     </div>
                                 </div>
                             </div>

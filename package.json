@@ -19,6 +19,9 @@
     "vite": "^7.3.0"
   },
   "dependencies": {
+    "@huggingface/inference": "^4.13.5",
+    "dotenv": "^17.2.3",
+    "openai": "^6.15.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "sqlite": "^5.1.1",

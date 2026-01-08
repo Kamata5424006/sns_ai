@@ -2,3 +2,4 @@ node_modules/
 netlify/functions/database/
 deno.lock
 .netlify/
+.env

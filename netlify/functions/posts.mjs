@@ -3,24 +3,27 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 
 // 絶対パス代入
-const dbPath = path.join(process.cwd(), "netlify/functions/database/database.db");
+const dbPath = path.join(
+  process.cwd(), 
+  "netlify/functions/database/database.db"
+);
 
 // DB 接続
 const dbPromise = open({
-  filename: dbPath,
-  driver: sqlite3.Database,
+    filename: dbPath,
+    driver: sqlite3.Database,
 });
 
 (async () => {
-  const db = await dbPromise;
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS posts(
-      id INTEGER PRIMARY KEY,
-      text TEXT NOT NULL,
-      author TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    const db = await dbPromise;
+    await db.run(`
+      CREATE TABLE IF NOT EXISTS posts(
+        id INTEGER PRIMARY KEY,
+        text TEXT NOT NULL,
+        author TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 })();
 
 export default async function handler(req) {
@@ -41,46 +44,45 @@ export default async function handler(req) {
 
 async function createPost_user(req) {
     try {
-    // リクエスト body を読む
-    const { text } = await req.json();
-    
-    if (!text || !text.trim()) {
+      // リクエスト body を読む
+      const { text } = await req.json();
+      
+      if (!text || !text.trim()) {
+        return new Response(
+          JSON.stringify({ error: "text is required" }),
+          { status: 400 }
+        );
+      }
+
+      const author = "you";
+
+      const db = await dbPromise;
+
+      // DB に保存
+      await db.run(
+        `INSERT INTO posts (text, author) VALUES (?, ?)`,
+        text,
+        author
+      );
+
+      // 成功レスポンス
       return new Response(
-        JSON.stringify({ error: "text is required" }),
-        { status: 400 }
+        JSON.stringify({ ok: true }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+      );
+    } catch (err) {
+      console.error(err);
+    
+      return new Response(
+        JSON.stringify({ error: "failed to save post" }),
+        { status: 500 }
       );
     }
-    
-    const author = "you";
-    
-    const db = await dbPromise;
-    
-    // DB に保存
-    await db.run(
-      `INSERT INTO posts (text, author) VALUES (?, ?)`,
-      text,
-      author
-    );
-    
-    // 成功レスポンス
-    return new Response(
-      JSON.stringify({ ok: true }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-    
-    } catch (err) {
-    console.error(err);
-    
-    return new Response(
-      JSON.stringify({ error: "failed to save post" }),
-      { status: 500 }
-    );
 }
 
-}
 async function getPosts(){
     try {
         const db = await dbPromise;
@@ -89,7 +91,7 @@ async function getPosts(){
         const rows = await db.all(
             "SELECT id, text, author, created_at FROM posts ORDER BY id DESC"
         );
-
+        
         return new Response(
             JSON.stringify(rows),
             {

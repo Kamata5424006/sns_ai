@@ -21,9 +21,9 @@ export default function PostForm(){
     
     return (
         <div id="PostForm">
-            <div className="post_icon">
+            <div id="form_icon">
                 <img
-                    src="/img/user.png"
+                    src="/img/you.png"
                     alt="You"
                     className="icon"
                 />
