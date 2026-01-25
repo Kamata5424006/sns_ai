@@ -1,5 +1,4 @@
 // fetch系
-
 export async function submit(text) {
     const res = await fetch("/.netlify/functions/posts", {
         //  POST:フォーム送信の命令

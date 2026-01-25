@@ -3,3 +3,4 @@ netlify/functions/database/
 deno.lock
 .netlify/
 .env
+scripts/

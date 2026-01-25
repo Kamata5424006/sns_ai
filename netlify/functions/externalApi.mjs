@@ -1,32 +1,37 @@
 import { OpenAI } from "openai";
-import path from "path";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
-
-// 絶対パス代入
-const dbPath = path.join(
-    process.cwd(), 
-    "netlify/functions/database/database.db"
-);
+import { Pool } from "pg";
 
 // DB 接続
-export const db = await open({
-    filename: dbPath,
-    driver: sqlite3.Database,
+const connectionString =
+  process.env.NETLIFY_DATABASE_URL ||
+  process.env.NETLIFY_DATABASE_URL_UNPOOLED;
+
+const pool = new Pool({
+  connectionString,
+  ssl: { rejectUnauthorized: false },
 });
 
-await db.run(`
-    CREATE TABLE IF NOT EXISTS posts(
-        id INTEGER PRIMARY KEY,
+// テーブル初期化（初回のみ）
+async function init() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS posts (
+        id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         text TEXT NOT NULL,
         author TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  } finally {
+    client.release();
+  }
+}
+init();
 
 const client = new OpenAI({
   baseURL: "https://router.huggingface.co/v1",
-  apiKey: process.env.AI_KEY,
+  apiKey: process.env.AI_KEY, // Netlifyに登録した環境変数
 });
 
 const MODEL = "meta-llama/Llama-3.2-3B-Instruct:novita";
@@ -68,8 +73,8 @@ export default async function generateAiPost() {
   for (const character of CHARACTERS) {
     const text = await generateText(character.system);
 
-    await db.run(
-      `INSERT INTO posts (author, text) VALUES (?, ?)`,
+    await pool.query(
+      `INSERT INTO posts (author, text) VALUES ($1, $2)`,
       [character.author, text]
     );
   }

@@ -1,30 +1,33 @@
-import path from "path";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
+import { Pool } from "pg";
 
-// 絶対パス代入
-const dbPath = path.join(
-  process.cwd(), 
-  "netlify/functions/database/database.db"
-);
+// Netlifyの環境変数
+const connectionString =
+  process.env.NETLIFY_DATABASE_URL || 
+  process.env.NETLIFY_DATABASE_URL_UNPOOLED;
 
 // DB 接続
-const dbPromise = open({
-    filename: dbPath,
-    driver: sqlite3.Database,
+const pool = new Pool({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
 });
 
-(async () => {
-    const db = await dbPromise;
-    await db.run(`
+// テーブル初期化（初回のみ）
+async function init() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
       CREATE TABLE IF NOT EXISTS posts(
-        id INTEGER PRIMARY KEY,
+        id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         text TEXT NOT NULL,
         author TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-})();
+  } finally {
+    client.release();
+  }
+}
+init();
 
 export default async function handler(req) {
     // POST 以外は拒否
@@ -56,13 +59,10 @@ async function createPost_user(req) {
 
       const author = "you";
 
-      const db = await dbPromise;
-
       // DB に保存
-      await db.run(
-        `INSERT INTO posts (text, author) VALUES (?, ?)`,
-        text,
-        author
+      await pool.query(
+        "INSERT INTO posts (text, author) VALUES ($1, $2)",
+        [text, author]
       );
 
       // 成功レスポンス
@@ -85,15 +85,12 @@ async function createPost_user(req) {
 
 async function getPosts(){
     try {
-        const db = await dbPromise;
-
-        // dbの全行代入
-        const rows = await db.all(
-            "SELECT id, text, author, created_at FROM posts ORDER BY id DESC"
+        const result = await pool.query(
+          "SELECT id, text, author, created_at FROM posts ORDER BY id DESC"
         );
         
         return new Response(
-            JSON.stringify(rows),
+            JSON.stringify(result.rows),
             {
                 status: 200, 
                 headers: { "Content-Type": "application/json" },
