@@ -8,15 +8,23 @@ export default function AiController() {
   const timerRef = useRef(null);
 
   useEffect(() => {
-    const start = () => {
+    const start = async () => {
       if (started.current) return;
-
       started.current = true;
+
       console.log("AI auto post started");
+
+      // 初回即実行
+      try {
+        await fetch("/.netlify/functions/externalApi", { method: "POST" });
+        console.log("AI post executed (initial)");
+      } catch (err) {
+        console.error("AI post error:", err);
+      }
 
       timerRef.current = setInterval(async () => {
         try {
-          await fetch("/.netlify/functions/externalApi");
+          await fetch("/.netlify/functions/externalApi", { method: "POST" });
           console.log("AI post executed");
         } catch (err) {
           console.error("AI post error:", err);
@@ -24,13 +32,18 @@ export default function AiController() {
       }, INTERVAL_MS);
     };
 
-    // 最初のユーザー操作で開始
-    const events = ["click", "scroll", "keydown", "touchstart"];
+    const handler = () => start();
 
-    events.forEach((e) => window.addEventListener(e, start, { once: true }));
+    window.addEventListener("click", handler, { once: true });
+    window.addEventListener("scroll", handler, { once: true });
+    window.addEventListener("keydown", handler, { once: true });
+    window.addEventListener("touchstart", handler, { once: true });
 
     return () => {
-      events.forEach((e) => window.removeEventListener(e, start));
+      window.removeEventListener("click", handler);
+      window.removeEventListener("scroll", handler);
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("touchstart", handler);
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
