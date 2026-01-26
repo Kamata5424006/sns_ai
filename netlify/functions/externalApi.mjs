@@ -29,11 +29,10 @@ async function init() {
 }
 
 const client = new OpenAI({
-  baseURL: "https://router.huggingface.co/v1",
-  apiKey: process.env.AI_KEY, // Netlifyに登録した環境変数
+  apiKey: process.env.OPENAI_KEY, // Netlifyに登録した環境変数
 });
 
-const MODEL = "meta-llama/Llama-3.2-3B-Instruct:novita";
+const MODEL = "gpt-5-nano";
 
 const CHARACTERS = [
   {
@@ -51,21 +50,12 @@ const CHARACTERS = [
 ];
 
 async function generateText(systemPrompt) {
-  const res = await client.chat.completions.create({
-    model: MODEL,
-    messages: [
-      { role: "system", content: systemPrompt },
-      {
-        role: "user",
-        content:
-          "一文だけ、文章の区切りが良いように日本語で書いてください。",
-      },
-    ],
-    temperature: 0.6,
-    max_tokens: 25,
+  const response = await client.responses.create({
+      model: MODEL,
+      input: systemPrompt + "\n一文だけ、日本語で、SNSの投稿風に書いてください。"
   });
 
-  return res.choices[0].message.content.trim();
+  return response.output_text.trim();
 }
 
 export default async (req, context) => { // v2の書き方
