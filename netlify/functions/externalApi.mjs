@@ -55,7 +55,13 @@ async function generateText(systemPrompt) {
       input: systemPrompt + "\n一文だけ、日本語で、SNSの投稿風に書いてください。"
   });
 
-  return response.output_text.trim();
+  const text = response.output[0]?.content?.[0]?.text;
+
+  if(!text){
+    throw new Error("OpenAI returned empty response");
+  }
+
+  return text.trim();
 }
 
 export default async (req, context) => { // v2の書き方
