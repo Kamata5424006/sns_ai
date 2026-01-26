@@ -61,8 +61,8 @@ async function generateText(systemPrompt) {
           "一文だけ、文章の区切りが良いように日本語で書いてください。",
       },
     ],
-    temperature: 0.7,
-    max_tokens: 40,
+    temperature: 0.6,
+    max_tokens: 25,
   });
 
   return res.choices[0].message.content.trim();
@@ -72,20 +72,30 @@ export default async (req, context) => { // v2の書き方
   try {
     await init();
 
-    for (const character of CHARACTERS) {
+    const tasks = CHARACTERS.map(async (character) => {
       const text = await generateText(character.system);
-      await pool.query(
-        `INSERT INTO posts (author, text) VALUES ($1, $2)`,
+
+      return pool.query(
+        'INSERT INTO posts (author, text) VALUES ($1, $2)',
         [character.author, text]
       );
-    }
-
-    return new Response(JSON.stringify({ ok: true, count: CHARACTERS.length }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
     });
+
+    // 中のPromiseが全て終わるまで待つ
+    await Promise.all(tasks);
+
+    return new Response(
+      JSON.stringify({ ok: true, count: CHARACTERS.length }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   } catch (error) {
     console.error("Function Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: error.message }), 
+      { status: 500 }
+    );
   }
 };
