@@ -17,7 +17,7 @@ export default function AiController() {
       // 初回即実行
       try {
         await fetch("/.netlify/functions/externalApi", { method: "POST" });
-        console.log("AI post executed (initial)");
+        console.log("AI post executed");
       } catch (err) {
         console.error("AI post error:", err);
       }

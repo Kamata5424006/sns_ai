@@ -69,7 +69,9 @@ async function generateText(systemPrompt) {
   return res.choices[0].message.content.trim();
 }
 
-export default async function generateAiPost() {
+export default async function handler(event, context) {
+  await init();
+
   for (const character of CHARACTERS) {
     const text = await generateText(character.system);
 
@@ -79,8 +81,8 @@ export default async function generateAiPost() {
     );
   }
 
-  return new Response(
-    JSON.stringify({ ok: true, count: CHARACTERS.length }),
-    { headers: { "Content-Type": "application/json" } }
-  );
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ ok: true, count: CHARACTERS.length })
+  };
 }

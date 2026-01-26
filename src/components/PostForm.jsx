@@ -13,6 +13,8 @@ export default function PostForm(){
         try {
             await submit(text); 
             setText("");
+            // 画面再読み込み
+            window.location.reload();
         } catch(err){   /* errはどんな名前でもよい */
             // 失敗した時の挙動
             alert(err.message);
