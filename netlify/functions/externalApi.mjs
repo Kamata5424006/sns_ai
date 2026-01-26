@@ -68,20 +68,24 @@ async function generateText(systemPrompt) {
   return res.choices[0].message.content.trim();
 }
 
-export  async function handler(event, context) {
-  await init();
+export default async (req, context) => { // v2の書き方
+  try {
+    await init();
 
-  for (const character of CHARACTERS) {
-    const text = await generateText(character.system);
+    for (const character of CHARACTERS) {
+      const text = await generateText(character.system);
+      await pool.query(
+        `INSERT INTO posts (author, text) VALUES ($1, $2)`,
+        [character.author, text]
+      );
+    }
 
-    await pool.query(
-      `INSERT INTO posts (author, text) VALUES ($1, $2)`,
-      [character.author, text]
-    );
+    return new Response(JSON.stringify({ ok: true, count: CHARACTERS.length }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Function Error:", error);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ ok: true, count: CHARACTERS.length })
-  };
-}
+};
