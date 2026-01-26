@@ -27,7 +27,6 @@ async function init() {
     client.release();
   }
 }
-init();
 
 const client = new OpenAI({
   baseURL: "https://router.huggingface.co/v1",
@@ -69,7 +68,7 @@ async function generateText(systemPrompt) {
   return res.choices[0].message.content.trim();
 }
 
-export default async function handler(event, context) {
+export  async function handler(event, context) {
   await init();
 
   for (const character of CHARACTERS) {
