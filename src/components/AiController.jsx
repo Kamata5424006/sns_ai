@@ -4,6 +4,8 @@ const INTERVAL_MINUTES = 2;
 const INTERVAL_MS = INTERVAL_MINUTES * 60 * 1000;
 
 export default function AiController() {
+  throw new Error("AiController loaded");
+
   const started = useRef(false);
   const timerRef = useRef(null);
 
