@@ -13,10 +13,10 @@ const pool = new Pool({
 });
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-const MODEL = "gpt-5-nano"; // 指定のモデル名
+const MODEL = "gpt-4o-mini"; // 指定のモデル名
 
 const CHARACTERS = [
   {

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const INTERVAL_MINUTES = 2;
+const INTERVAL_MINUTES = 5;
 const INTERVAL_MS = INTERVAL_MINUTES * 60 * 1000;
 
 export default function AiController() {
